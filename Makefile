@@ -251,7 +251,8 @@ default-versioned-images := 	mariadb-10.4 \
 ####### Experimental Images
 #######
 
-experimental-images := 
+experimental-images := 		mysql-8.0 \
+							mysql-8.0-drupal
 
 build-versioned-images = $(foreach image,$(versioned-images) $(default-versioned-images) $(experimental-images),build/$(image))
 
