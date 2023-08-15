@@ -41,6 +41,18 @@ services:
       - "28017"
     << : *default-user # uses the defined user from top
 
+  mysql-5-7:
+    image: chrisgio/testimages:mysql-5.7 # Placeholder image - to be updated
+    ports:
+      - "3306"
+    << : *default-user # uses the defined user from top
+
+  mysql-8-0:
+    image: chrisgio/testimages:mysql-8.0 # Placeholder image - to be updated
+    ports:
+      - "3306"
+    << : *default-user # uses the defined user from top
+
   postgres-11:
     image: uselagoon/postgres-11:latest
     ports:
@@ -145,7 +157,7 @@ services:
     << : *default-user # uses the defined user from top
 
   internal-services-test:
-    image: docker.io/uselagoon/internal-services-test:main
+    image: docker.io/uselagoon/internal-services-test:add_mysql  # Placeholder image - to be updated
     ports:
       - "3000"
     environment:
