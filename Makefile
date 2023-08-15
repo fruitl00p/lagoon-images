@@ -232,8 +232,6 @@ versioned-images := 		php-8.0-fpm \
 							ruby-3.1 \
 							ruby-3.2 \
 							opensearch-2 \
-							mysql-5.7 \
-							mysql-5.7-drupal \
 							mysql-8.0 \
 							mysql-8.0-drupal
 
@@ -253,12 +251,7 @@ default-versioned-images := 	mariadb-10.4 \
 ####### Experimental Images
 #######
 
-experimental-images := 		solr-8 \
-							solr-8-drupal \
-							mysql-5.7 \
-							mysql-5.7-drupal \
-							mysql-8.0 \
-							mysql-8.0-drupal
+experimental-images := 
 
 build-versioned-images = $(foreach image,$(versioned-images) $(default-versioned-images) $(experimental-images),build/$(image))
 
@@ -324,8 +317,7 @@ build/mariadb-10.11-drupal: build/mariadb-10.11
 build/ruby-3.0 build/ruby-3.1 build/ruby-3.2: build/commons
 build/opensearch-2: build/commons
 build/mongo-4: build/commons 
-build/mysql-5.7 build/mysql-8.0: build/commons
-build/mysql-5.7-drupal : build/mysql-5.7
+build/mysql-8.0: build/commons
 build/mysql-8.0-drupal : build/mysql-8.0
 
 #######
