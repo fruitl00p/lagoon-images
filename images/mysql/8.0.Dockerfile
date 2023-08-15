@@ -61,7 +61,7 @@ COPY entrypoints/ /lagoon/entrypoints/
 COPY mysql-backup.sh /lagoon/
 COPY my.cnf /etc/mysql/my.cnf
 
-RUN for i in /var/run/mysqld /run/mysqld /var/lib/mysql /etc/mysql/conf.d /docker-entrypoint-initdb.d/ "${BACKUPS_DIR}" /home; \
+RUN for i in /var/run/mysqld /run/mysqld /var/lib/mysql /etc/mysql/conf.d /docker-entrypoint-initdb.d /home; \
     do mkdir -p $i; chown mysql $i; /bin/fix-permissions $i; \
     done
 
@@ -79,7 +79,6 @@ USER mysql
 ENV USER_NAME mysql
 
 WORKDIR /var/lib/mysql
-VOLUME /var/lib/mysql
 EXPOSE 3306
 
 ENTRYPOINT ["/sbin/tini", "--", "/lagoon/entrypoints.bash"]
