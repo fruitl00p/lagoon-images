@@ -231,7 +231,11 @@ versioned-images := 		php-8.0-fpm \
 							ruby-3.0 \
 							ruby-3.1 \
 							ruby-3.2 \
-							opensearch-2
+							opensearch-2 \
+							mysql-5.7 \
+							mysql-5.7-drupal \
+							mysql-8.0 \
+							mysql-8.0-drupal
 
 # default-versioned-images are images that formerly had no versioning, and are made backwards-compatible.
 # the below versions are the ones that map to the unversioned namespace
@@ -315,6 +319,9 @@ build/mariadb-10.11-drupal: build/mariadb-10.11
 build/ruby-3.0 build/ruby-3.1 build/ruby-3.2: build/commons
 build/opensearch-2: build/commons
 build/mongo-4: build/commons 
+build/mysql-5.7 build/mysql-8.0: build/commons
+build/mysql-5.7-drupal : build/mysql-5.7
+build/mysql-8.0-drupal : build/mysql-8.0
 
 #######
 ####### Building Images
