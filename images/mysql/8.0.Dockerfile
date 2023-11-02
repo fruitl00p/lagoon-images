@@ -1,6 +1,6 @@
 ARG IMAGE_REPO
 FROM ${IMAGE_REPO:-lagoon}/commons as commons
-FROM mysql:8.0.34-debian
+FROM mysql:8.0.35-debian
 
 LABEL org.opencontainers.image.authors="The Lagoon Authors" maintainer="The Lagoon Authors"
 LABEL org.opencontainers.image.source="https://github.com/uselagoon/lagoon-images" repository="https://github.com/uselagoon/lagoon-images"
@@ -35,10 +35,10 @@ ENV TMPDIR=/tmp \
 
 ENV BACKUPS_DIR="/var/lib/mysql/backup"
 
-ENV MARIADB_DATABASE=lagoon \
-    MARIADB_USER=lagoon \
-    MARIADB_PASSWORD=lagoon \
-    MARIADB_ROOT_PASSWORD=Lag00n
+ENV MYSQL_DATABASE=lagoon \
+    MYSQL_USER=lagoon \
+    MYSQL_PASSWORD=lagoon \
+    MYSQL_ROOT_PASSWORD=Lag00n
 
 RUN \
     apt-get update && apt-get -y install \

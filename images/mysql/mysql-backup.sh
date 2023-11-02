@@ -21,13 +21,13 @@
 set -eu -o pipefail
 
 # directory to put the backup files
-BACKUP_DIR=${MARIADB_DATA_DIR:-/var/lib/mysql}/backup
+BACKUP_DIR=${MYSQL_DATA_DIR:-/var/lib/mysql}/backup
 
 # MYSQL Parameters
-MARIADB_USER=${MARIADB_USER:-lagoon}
-MARIADB_PASSWORD=${MARIADB_PASSWORD:-lagoon}
+MYSQL_USER=${MYSQL_USER:-lagoon}
+MYSQL_PASSWORD=${MYSQL_PASSWORD:-lagoon}
 
-MARIADB_HOST=$1
+MYSQL_HOST=$1
 
 # Don't backup databases with these names
 # Example: starts with mysql (^mysql) or ends with _schema (_schema$)
@@ -55,9 +55,9 @@ function delete_old_backups()
 }
 
 function mysql_login() {
-  cmd="-u $MARIADB_USER -h $MARIADB_HOST"
-  if [ -n "$MARIADB_PASSWORD" ]; then
-    cmd="$cmd -p$MARIADB_PASSWORD"
+  cmd="-u $MYSQL_USER -h $MYSQL_HOST"
+  if [ -n "$MYSQL_PASSWORD" ]; then
+    cmd="$cmd -p$MYSQL_PASSWORD"
   fi
   echo $cmd
 }
