@@ -78,10 +78,12 @@ docker_build_local = DOCKER_BUILDKIT=1 docker build $(DOCKER_BUILD_PARAMS) \
 						-f $(2) $(3)
 
 docker_buildx_two = docker buildx build $(DOCKER_BUILD_PARAMS) \
+						--builder ci-local \
 						--platform linux/amd64,linux/arm64/v8 \
 						--build-arg BUILDKIT_INLINE_CACHE=1 \
 						--build-arg LAGOON_VERSION=$(LAGOON_VERSION) \
 						--build-arg IMAGE_REPO=localhost:5000/testlagoon \
+						--pull \
 						--cache-from=type=registry,ref=localhost:5000/testlagoon/$(1) \
 						--push \
 						-t localhost:5000/testlagoon/$(1) \
@@ -90,10 +92,12 @@ docker_buildx_two = docker buildx build $(DOCKER_BUILD_PARAMS) \
 						-f $(2) $(3)
 
 docker_buildx_three = docker buildx build $(DOCKER_BUILD_PARAMS) \
+						--builder ci-local \
 						--platform linux/amd64,linux/arm64/v8 \
 						--build-arg BUILDKIT_INLINE_CACHE=1 \
 						--build-arg LAGOON_VERSION=$(LAGOON_VERSION) \
 						--build-arg IMAGE_REPO=localhost:5000/uselagoon \
+						--pull \
 						--cache-from=type=registry,ref=localhost:5000/testlagoon/$(1) \
 						--push \
 						-t localhost:5000/uselagoon/$(1) \
@@ -175,23 +179,20 @@ build/rabbitmq-cluster: build/rabbitmq images/rabbitmq-cluster/Dockerfile
 ####### Multi-version Images
 #######
 
-versioned-images := 		php-8.0-fpm \
-							php-8.1-fpm \
+versioned-images := 		php-8.1-fpm \
 							php-8.2-fpm \
-							php-8.0-cli \
+							php-8.3-fpm \
 							php-8.1-cli \
 							php-8.2-cli \
-							php-8.0-cli-drupal \
+							php-8.3-cli \
 							php-8.1-cli-drupal \
 							php-8.2-cli-drupal \
-							python-3.7 \
+							php-8.3-cli-drupal \
 							python-3.8 \
 							python-3.9 \
 							python-3.10 \
 							python-3.11 \
-							node-16 \
-							node-16-builder \
-							node-16-cli \
+							python-3.12 \
 							node-18 \
 							node-18-builder \
 							node-18-cli \
@@ -212,6 +213,8 @@ versioned-images := 		php-8.0-fpm \
 							postgres-14-drupal \
 							postgres-15 \
 							postgres-15-drupal \
+							postgres-16 \
+							postgres-16-drupal \
 							redis-6 \
 							redis-6-persistent \
 							redis-7 \
@@ -243,8 +246,6 @@ default-versioned-images := 	mariadb-10.4 \
 							postgres-11 \
 							postgres-11-ckan \
 							postgres-11-drupal \
-							redis-5 \
-							redis-5-persistent \
 							mongo-4
 
 #######
@@ -279,26 +280,25 @@ base-images-with-versions += $(experimental-images)
 s3-images += $(versioned-images)
 s3-images += $(experimental-images)
 
-build/php-8.0-fpm build/php-8.1-fpm build/php-8.2-fpm: build/commons
-build/php-8.0-cli: build/php-8.0-fpm
+build/php-8.1-fpm build/php-8.2-fpm build/php-8.3-fpm: build/commons
 build/php-8.1-cli: build/php-8.1-fpm
 build/php-8.2-cli: build/php-8.2-fpm
-build/php-8.0-cli-drupal: build/php-8.0-cli
+build/php-8.3-cli: build/php-8.3-fpm
 build/php-8.1-cli-drupal: build/php-8.1-cli
 build/php-8.2-cli-drupal: build/php-8.2-cli
-build/python-3.7 build/python-3.8 build/python-3.9 build/python-3.10 build/python-3.11: build/commons
-build/node-16 build/node-18 build/node-20: build/commons
-build/node-16-builder build/node-16-cli: build/node-16
+build/php-8.3-cli-drupal: build/php-8.3-cli
+build/python-3.7 build/python-3.8 build/python-3.9 build/python-3.10 build/python-3.11 build/python-3.12: build/commons
+build/node-18 build/node-20: build/commons
 build/node-18-builder build/node-18-cli: build/node-18
 build/node-20-builder build/node-20-cli: build/node-20
-build/postgres-11 build/postgres-12 build/postgres-13 build/postgres-14 build/postgres-15: build/commons
+build/postgres-11 build/postgres-12 build/postgres-13 build/postgres-14 build/postgres-15 build/postgres-16: build/commons
 build/postgres-11-ckan build/postgres-11-drupal: build/postgres-11
 build/postgres-12-drupal: build/postgres-12
 build/postgres-13-drupal: build/postgres-13
 build/postgres-14-drupal: build/postgres-14
 build/postgres-15-drupal: build/postgres-15
-build/redis-5 build/redis-6 build/redis-7: build/commons
-build/redis-5-persistent: build/redis-5
+build/postgres-16-drupal: build/postgres-16
+build/redis-6 build/redis-7: build/commons
 build/redis-6-persistent: build/redis-6
 build/redis-7-persistent: build/redis-7
 build/varnish-6 build/varnish-7: build/commons
@@ -355,7 +355,7 @@ scan-images:
 .PHONY: docker-buildx-configure
 docker-buildx-configure:
 	docker run -d -p 5000:5000 --restart always --name registry registry:2
-	docker buildx create --platform linux/arm64,linux/arm/v8 --driver-opt network=host --name ci-local --use
+	docker buildx create --platform linux/arm64,linux/arm/v8 --driver-opt network=host --name ci-local
 	docker buildx ls
 	docker context ls
 
@@ -566,7 +566,7 @@ $(s3-load):
 docker-buildx-remove:
 	docker stop registry || echo "no registry"
 	docker rm registry || echo "no registry"
-	docker buildx rm ci-local
+	docker buildx rm ci-local || echo "no buildx cache"
 	docker buildx ls
 	docker context ls
 

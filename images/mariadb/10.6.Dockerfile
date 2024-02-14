@@ -1,7 +1,7 @@
 ARG IMAGE_REPO
 FROM ${IMAGE_REPO:-lagoon}/commons as commons
 # Held at 3.17.x to ensure mariadb 10.6 whilst we evaluate upgrade path
-FROM alpine:3.17.5
+FROM alpine:3.17.7
 
 LABEL org.opencontainers.image.authors="The Lagoon Authors" maintainer="The Lagoon Authors"
 LABEL org.opencontainers.image.source="https://github.com/uselagoon/lagoon-images" repository="https://github.com/uselagoon/lagoon-images"
@@ -32,8 +32,8 @@ ENV MARIADB_DATABASE=lagoon \
     MARIADB_PASSWORD=lagoon \
     MARIADB_ROOT_PASSWORD=Lag00n
 
-RUN \
-    apk add --no-cache --virtual .common-run-deps \
+RUN apk update \
+    && apk add --no-cache --virtual .common-run-deps \
         bash \
         curl \
         gettext \
@@ -43,13 +43,17 @@ RUN \
         mariadb=~10.6 \
         mariadb-connector-c \
         net-tools \
+        perl-doc \
         pwgen \
+        rsync \
+        tar \
         tini \
         tzdata \
-        wget; \
-    rm -rf /tmp/* /var/tmp/* /var/cache/apk/* /var/cache/distfiles/*; \
-    rm -rf /var/lib/mysql/* /etc/mysql/ /etc/my.cnf*; \
-    curl -sSL https://raw.githubusercontent.com/major/MySQLTuner-perl/master/mysqltuner.pl -o mysqltuner.pl
+        wget \
+    && rm -rf /var/cache/apk/* \
+    && rm -rf /tmp/* /var/tmp/* /var/cache/distfiles/* \
+    && rm -rf /var/lib/mysql/* /etc/mysql/ /etc/my.cnf* \
+    && curl -sSL https://raw.githubusercontent.com/major/MySQLTuner-perl/master/mysqltuner.pl -o mysqltuner.pl
 
 COPY entrypoints/ /lagoon/entrypoints/
 COPY mysql-backup.sh /lagoon/

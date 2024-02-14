@@ -1,11 +1,9 @@
 ARG IMAGE_REPO
 FROM ${IMAGE_REPO:-lagoon}/commons as commons
-FROM node:16.20-alpine3.18
+FROM postgres:16.2-alpine3.19
 
 LABEL org.opencontainers.image.authors="The Lagoon Authors" maintainer="The Lagoon Authors"
 LABEL org.opencontainers.image.source="https://github.com/uselagoon/lagoon-images" repository="https://github.com/uselagoon/lagoon-images"
-
-ENV LAGOON=node
 
 ARG LAGOON_VERSION
 ENV LAGOON_VERSION=$LAGOON_VERSION
@@ -16,12 +14,6 @@ COPY --from=commons /bin/fix-permissions /bin/ep /bin/docker-sleep /bin/wait-for
 COPY --from=commons /sbin/tini /sbin/
 COPY --from=commons /home /home
 
-RUN fix-permissions /etc/passwd \
-    && mkdir -p /home \
-    && fix-permissions /home \
-    && mkdir -p /app \
-    && fix-permissions /app
-
 ENV TMPDIR=/tmp \
     TMP=/tmp \
     HOME=/home \
@@ -31,18 +23,26 @@ ENV TMPDIR=/tmp \
     BASH_ENV=/home/.bashrc
 
 RUN apk update \
+    && apk add --no-cache \
+        rsync \
+        tar \
     && rm -rf /var/cache/apk/*
 
-# Make sure Bower and NPM are allowed to be running as root
-RUN echo '{ "allow_root": true }' > /home/.bowerrc \
-    && echo 'unsafe-perm=true' > /home/.npmrc
+RUN fix-permissions /etc/passwd \
+    && mkdir -p /home
 
-WORKDIR /app
+ENV LAGOON=postgres
 
-EXPOSE 3000
+COPY postgres-backup.sh /lagoon/
 
-# tells the local development environment on which port we are running
-ENV LAGOON_LOCALDEV_HTTP_PORT=3000
+RUN echo -e "local all all md5\nhost  all  all 0.0.0.0/0 md5" >> /usr/local/share/postgresql/pg_hba.conf
 
-ENTRYPOINT ["/sbin/tini", "--", "/lagoon/entrypoints.sh"]
-CMD ["yarn", "run", "start"]
+ENV PGUSER=postgres \
+    POSTGRES_PASSWORD=lagoon \
+    POSTGRES_USER=lagoon \
+    POSTGRES_DB=lagoon \
+    PGDATA=/var/lib/postgresql/data/pgdata
+
+# Postgresql entrypoint file needs bash, so start the entrypoints with bash
+ENTRYPOINT ["/sbin/tini", "--", "/lagoon/entrypoints.bash"]
+CMD ["/usr/local/bin/docker-entrypoint.sh", "postgres"]

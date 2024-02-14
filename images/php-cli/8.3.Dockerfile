@@ -1,5 +1,5 @@
 ARG IMAGE_REPO
-FROM ${IMAGE_REPO:-lagoon}/php-8.0-fpm
+FROM ${IMAGE_REPO:-lagoon}/php-8.3-fpm
 
 LABEL org.opencontainers.image.authors="The Lagoon Authors" maintainer="The Lagoon Authors"
 LABEL org.opencontainers.image.source="https://github.com/uselagoon/lagoon-images" repository="https://github.com/uselagoon/lagoon-images"
@@ -14,7 +14,7 @@ RUN apk add --no-cache git \
         mariadb-client \
         mariadb-connector-c \
         mongodb-tools \
-        nodejs-current=~18 \
+        nodejs-current=~20 \
         npm \
         openssh-client \
         openssh-sftp-server \
@@ -27,15 +27,16 @@ RUN apk add --no-cache git \
     && ln -s /usr/lib/ssh/sftp-server /usr/local/bin/sftp-server \
     && rm -rf /var/cache/apk/*
 
-RUN curl -L -o /usr/local/bin/composer https://github.com/composer/composer/releases/download/2.6.4/composer.phar \
+RUN curl -L -o /usr/local/bin/composer https://github.com/composer/composer/releases/download/2.7.1/composer.phar \
     && chmod +x /usr/local/bin/composer \
     && mkdir -p /home/.ssh \
     && fix-permissions /home/
 
-# Adding Composer vendor bin path to $PATH.
-ENV PATH="/home/.composer/vendor/bin:${PATH}"
+# Adding Composer vendor bin directories to $PATH.
+ENV PATH="/app/vendor/bin:/home/.composer/vendor/bin:$PATH"
 # We not only use "export $PATH" as this could be overwritten again
 # like it happens in /etc/profile of alpine Images.
+
 COPY entrypoints /lagoon/entrypoints/
 
 # Remove warning about running as root in composer

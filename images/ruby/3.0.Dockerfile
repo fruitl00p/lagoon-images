@@ -1,6 +1,6 @@
 ARG IMAGE_REPO
 FROM ${IMAGE_REPO:-lagoon}/commons as commons
-# Alpine 3.18 image not available for Ruby 3.0
+# Alpine 3.19 image not available for Ruby 3.0
 FROM ruby:3.0.6-alpine3.16
 
 LABEL org.opencontainers.image.authors="The Lagoon Authors" maintainer="The Lagoon Authors"
@@ -28,11 +28,16 @@ ENV TMPDIR=/tmp \
     # When Bash is invoked as non-interactive (like `bash -c command`) it sources a file that is given in `BASH_ENV`
     BASH_ENV=/home/.bashrc
 
-RUN apk add --no-cache --virtual .build-deps \
+RUN apk update \
+    && apk add --no-cache --virtual .build-deps \
         build-base \
     && gem install webrick puma bundler \
     && apk del \
-           .build-deps
+        .build-deps \
+    && apk add --no-cache \
+        rsync \
+        tar \
+    && rm -rf /var/cache/apk/*
 
 # Make sure shells are not running forever
 COPY 80-shell-timeout.sh /lagoon/entrypoints/

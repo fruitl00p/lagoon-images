@@ -31,8 +31,11 @@ docker run --rm --net all-images_default jwilder/dockerize dockerize -wait tcp:/
 docker run --rm --net all-images_default jwilder/dockerize dockerize -wait tcp://postgres-13:5432 -timeout 1m
 docker run --rm --net all-images_default jwilder/dockerize dockerize -wait tcp://postgres-14:5432 -timeout 1m
 docker run --rm --net all-images_default jwilder/dockerize dockerize -wait tcp://postgres-15:5432 -timeout 1m
+docker run --rm --net all-images_default jwilder/dockerize dockerize -wait tcp://postgres-16:5432 -timeout 1m
 docker run --rm --net all-images_default jwilder/dockerize dockerize -wait tcp://mongo-4:27017 -timeout 1m
 docker run --rm --net all-images_default jwilder/dockerize dockerize -wait tcp://rabbitmq:15672 -timeout 1m
+docker run --rm --net all-images_default jwilder/dockerize dockerize -wait tcp://redis-6:6379 -timeout 1m
+docker run --rm --net all-images_default jwilder/dockerize dockerize -wait tcp://redis-7:6379 -timeout 1m
 docker run --rm --net all-images_default jwilder/dockerize dockerize -wait tcp://opensearch-2:9200 -timeout 1m
 ```
 
@@ -54,8 +57,8 @@ docker ps --filter label=com.docker.compose.project=all-images | grep Up | grep 
 docker ps --filter label=com.docker.compose.project=all-images | grep Up | grep postgres-13
 docker ps --filter label=com.docker.compose.project=all-images | grep Up | grep postgres-14
 docker ps --filter label=com.docker.compose.project=all-images | grep Up | grep postgres-15
+docker ps --filter label=com.docker.compose.project=all-images | grep Up | grep postgres-16
 docker ps --filter label=com.docker.compose.project=all-images | grep Up | grep rabbitmq
-docker ps --filter label=com.docker.compose.project=all-images | grep Up | grep redis-5
 docker ps --filter label=com.docker.compose.project=all-images | grep Up | grep redis-6
 docker ps --filter label=com.docker.compose.project=all-images | grep Up | grep redis-7
 docker ps --filter label=com.docker.compose.project=all-images | grep Up | grep solr-7
@@ -76,19 +79,6 @@ docker-compose exec -T rabbitmq sh -c "rabbitmq-plugins list" | grep "E" | grep 
 # rabbitmq should have a running RabbitMQ management page running on 15672
 docker-compose exec -T commons sh -c "curl -kL http://rabbitmq:15672" | grep "RabbitMQ Management"
 
-# redis-5 should be running Redis v5.0
-docker-compose exec -T redis-5 sh -c "redis-server --version" | grep v=5.
-
-# redis-5 should be able to see databases
-docker-compose exec -T redis-5 sh -c "redis-cli CONFIG GET databases"
-
-# redis-5 should have initialized database
-docker-compose exec -T redis-5 sh -c "redis-cli dbsize"
-
-# redis-5 should be able to read/write data
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/redis-5" | grep "SERVICE_HOST=redis-5"
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/redis-5" | grep "LAGOON_TEST_VAR=all-images"
-
 # redis-6 should be running Redis v6.0
 docker-compose exec -T redis-6 sh -c "redis-server --version" | grep v=6.
 
@@ -99,8 +89,8 @@ docker-compose exec -T redis-6 sh -c "redis-cli CONFIG GET databases"
 docker-compose exec -T redis-6 sh -c "redis-cli dbsize"
 
 # redis-6 should be able to read/write data
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/redis-6" | grep "SERVICE_HOST=redis-6"
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/redis-6" | grep "LAGOON_TEST_VAR=all-images"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/redis?service=redis-6" | grep "SERVICE_HOST=redis-6"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/redis?service=redis-6" | grep "LAGOON_TEST_VAR=all-images"
 
 # redis-7 should be running Redis v7.0
 docker-compose exec -T redis-7 sh -c "redis-server --version" | grep v=7.
@@ -112,8 +102,8 @@ docker-compose exec -T redis-7 sh -c "redis-cli CONFIG GET databases"
 docker-compose exec -T redis-7 sh -c "redis-cli dbsize"
 
 # redis-7 should be able to read/write data
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/redis-7" | grep "SERVICE_HOST=redis-7"
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/redis-7" | grep "LAGOON_TEST_VAR=all-images"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/redis?service=redis-7" | grep "SERVICE_HOST=redis-7"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/redis?service=redis-7" |grep "LAGOON_TEST_VAR=all-images"
 
 # solr-7 should have a "mycore" Solr core
 docker-compose exec -T commons sh -c "curl solr-7:8983/solr/admin/cores?action=STATUS\&core=mycore"
@@ -125,8 +115,8 @@ docker-compose exec -T commons sh -c "curl solr-7:8983/solr/admin/cores?action=R
 docker-compose exec -T solr-7 sh -c "cat /opt/solr/server/solr/mycores/mycore/conf/solrconfig.xml" | grep luceneMatchVersion | grep 7.7
 
 # solr-7 should be able to read/write data
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/solr-7" | grep "SERVICE_HOST=solr-7"
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/solr-7" | grep "LAGOON_TEST_VAR=all-images"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/solr?service=solr-7" | grep "SERVICE_HOST=solr-7"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/solr?service=solr-7" | grep "LAGOON_TEST_VAR=all-images"
 
 # solr-8 should have a "mycore" Solr core
 docker-compose exec -T commons sh -c "curl solr-8:8983/solr/admin/cores?action=STATUS\&core=mycore"
@@ -138,8 +128,8 @@ docker-compose exec -T commons sh -c "curl solr-8:8983/solr/admin/cores?action=R
 docker-compose exec -T solr-8 sh -c "cat /var/solr/data/mycore/conf/solrconfig.xml" | grep luceneMatchVersion | grep 8.
 
 # solr-8 should be able to read/write data
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/solr-8" | grep "SERVICE_HOST=solr-8"
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/solr-8" | grep "LAGOON_TEST_VAR=all-images"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/solr?service=solr-8" | grep "SERVICE_HOST=solr-8"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/solr?service=solr-8" | grep "LAGOON_TEST_VAR=all-images"
 
 # mariadb-10-4 should be version 10.4 client
 docker-compose exec -T mariadb-10-4 sh -c "mysql -V" | grep "10.4"
@@ -151,8 +141,8 @@ docker-compose exec -T mariadb-10-4 sh -c "mysql -e \'SHOW variables;\'" | grep 
 docker-compose exec -T mariadb-10-4 sh -c "mysql -D lagoon -u lagoon --password=lagoon -e \'SHOW databases;\'" | grep lagoon
 
 # mariadb-10-4 should be able to read/write data
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mariadb-10-4" | grep "SERVICE_HOST=10.4"
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mariadb-10-4" | grep "LAGOON_TEST_VAR=all-images"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mariadb?service=mariadb-10-4" | grep "SERVICE_HOST=10.4"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mariadb?service=mariadb-10-4" | grep "LAGOON_TEST_VAR=all-images"
 
 # mariadb-10-5 should be version 10.5 client
 docker-compose exec -T mariadb-10-5 sh -c "mysql -V" | grep "10.5"
@@ -164,8 +154,8 @@ docker-compose exec -T mariadb-10-5 sh -c "mysql -e \'SHOW variables;\'" | grep 
 docker-compose exec -T mariadb-10-5 sh -c "mysql -D lagoon -u lagoon --password=lagoon -e \'SHOW databases;\'" | grep lagoon
 
 # mariadb-10-5 should be able to read/write data
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mariadb-10-5" | grep "SERVICE_HOST=10.5"
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mariadb-10-5" | grep "LAGOON_TEST_VAR=all-images"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mariadb?service=mariadb-10-5" | grep "SERVICE_HOST=10.5"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mariadb?service=mariadb-10-5" | grep "LAGOON_TEST_VAR=all-images"
 
 # mariadb-10-6 should be version 10.6 client
 docker-compose exec -T mariadb-10-6 sh -c "mysql -V" | grep "10.6"
@@ -173,12 +163,18 @@ docker-compose exec -T mariadb-10-6 sh -c "mysql -V" | grep "10.6"
 # mariadb-10-6 should be version 10.6 server
 docker-compose exec -T mariadb-10-6 sh -c "mysql -e \'SHOW variables;\'" | grep "version" | grep "10.6"
 
+# mariadb-10-6 should have performance schema and slow logging disabled
+docker-compose exec -T mariadb-10-6 sh -c "mysql -D lagoon -u lagoon --password=lagoon -e \'SHOW GLOBAL VARIABLES;\'" | grep "performance_schema" | grep "OFF"
+docker-compose exec -T mariadb-10-6 sh -c "mysql -D lagoon -u lagoon --password=lagoon -e \'SHOW GLOBAL VARIABLES;\'" | grep "slow_query_log" | grep "OFF"
+docker-compose exec -T mariadb-10-6 sh -c "mysql -D lagoon -u lagoon --password=lagoon -e \'SHOW GLOBAL VARIABLES;\'" | grep "long_query_time" | grep "10"
+docker-compose exec -T mariadb-10-6 sh -c "mysql -D lagoon -u lagoon --password=lagoon -e \'SHOW GLOBAL VARIABLES;\'" | grep "log_slow_rate_limit" | grep "1"
+
 # mariadb-10-6 should use default credentials
 docker-compose exec -T mariadb-10-6 sh -c "mysql -D lagoon -u lagoon --password=lagoon -e \'SHOW databases;\'" | grep lagoon
 
 # mariadb-10-6 should be able to read/write data
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mariadb-10-6" | grep "SERVICE_HOST=10.6"
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mariadb-10-6" | grep "LAGOON_TEST_VAR=all-images"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mariadb?service=mariadb-10-6" | grep "SERVICE_HOST=10.6"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mariadb?service=mariadb-10-6" | grep "LAGOON_TEST_VAR=all-images"
 
 # mariadb-10-11 should be version 10.11 client
 docker-compose exec -T mariadb-10-11 sh -c "mysql -V" | grep "10.11"
@@ -186,12 +182,18 @@ docker-compose exec -T mariadb-10-11 sh -c "mysql -V" | grep "10.11"
 # mariadb-10-11 should be version 10.11 server
 docker-compose exec -T mariadb-10-11 sh -c "mysql -e \'SHOW variables;\'" | grep "version" | grep "10.11"
 
+# mariadb-10-11 should have performance schema and slow logging enabled
+docker-compose exec -T mariadb-10-11 sh -c "mysql -D lagoon -u lagoon --password=lagoon -e \'SHOW GLOBAL VARIABLES;\'" | grep "performance_schema" | grep "ON"
+docker-compose exec -T mariadb-10-11 sh -c "mysql -D lagoon -u lagoon --password=lagoon -e \'SHOW GLOBAL VARIABLES;\'" | grep "slow_query_log" | grep "ON"
+docker-compose exec -T mariadb-10-11 sh -c "mysql -D lagoon -u lagoon --password=lagoon -e \'SHOW GLOBAL VARIABLES;\'" | grep "long_query_time" | grep "30"
+docker-compose exec -T mariadb-10-11 sh -c "mysql -D lagoon -u lagoon --password=lagoon -e \'SHOW GLOBAL VARIABLES;\'" | grep "log_slow_rate_limit" | grep "5"
+
 # mariadb-10-11 should use default credentials
 docker-compose exec -T mariadb-10-11 sh -c "mysql -D lagoon -u lagoon --password=lagoon -e \'SHOW databases;\'" | grep lagoon
 
 # mariadb-10-11 should be able to read/write data
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mariadb-10-11" | grep "SERVICE_HOST=10.11"
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mariadb-10-11" | grep "LAGOON_TEST_VAR=all-images"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mariadb?service=mariadb-10-11" | grep "SERVICE_HOST=10.11"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mariadb?service=mariadb-10-11" | grep "LAGOON_TEST_VAR=all-images"
 
 # mongo-4 should be version 4.0 client
 docker-compose exec -T mongo-4 sh -c "mongo --version" | grep "shell version" | grep "v4.0"
@@ -203,8 +205,8 @@ docker-compose exec -T mongo-4 sh -c "mongo --eval \'printjson(db.serverStatus()
 docker-compose exec -T mongo-4 sh -c "mongo --eval \'db.stats()\'" | grep "db" | grep "test"
 
 # mongo-4 should be able to read/write data
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mongo-4" | grep "SERVICE_HOST="
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mongo-4" | grep "LAGOON_TEST_VAR=all"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mongo?service=mongo-4" | grep "SERVICE_HOST="
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/mongo?service=mongo-4" | grep "LAGOON_TEST_VAR=all"
 
 # postgres-11 should be version 11 client
 docker-compose exec -T postgres-11 bash -c "psql --version" | grep "psql" | grep "11."
@@ -216,8 +218,8 @@ docker-compose exec -T postgres-11 bash -c "psql -U lagoon -d lagoon -c \'SELECT
 docker-compose exec -T postgres-11 bash -c "psql -U lagoon -d lagoon -c \'\\l+ lagoon\'" | grep "lagoon"
 
 # postgres-11 should be able to read/write data
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres-11" | grep "SERVICE_HOST=PostgreSQL 11"
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres-11" | grep "LAGOON_TEST_VAR=all-images"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres?service=postgres-11" | grep "SERVICE_HOST=PostgreSQL 11"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres?service=postgres-11" | grep "LAGOON_TEST_VAR=all-images"
 
 # postgres-12 should be version 12 client
 docker-compose exec -T postgres-12 bash -c "psql --version" | grep "psql" | grep "12."
@@ -229,8 +231,8 @@ docker-compose exec -T postgres-12 bash -c "psql -U lagoon -d lagoon -c \'SELECT
 docker-compose exec -T postgres-12 bash -c "psql -U lagoon -d lagoon -c \'\\l+ lagoon\'" | grep "lagoon"
 
 # postgres-12 should be able to read/write data
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres-12" | grep "SERVICE_HOST=PostgreSQL 12"
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres-12" | grep "LAGOON_TEST_VAR=all-images"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres?service=postgres-12" | grep "SERVICE_HOST=PostgreSQL 12"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres?service=postgres-12" | grep "LAGOON_TEST_VAR=all-images"
 
 # postgres-13 should be version 13 client
 docker-compose exec -T postgres-13 bash -c "psql --version" | grep "psql" | grep "13."
@@ -242,8 +244,8 @@ docker-compose exec -T postgres-13 bash -c "psql -U lagoon -d lagoon -c \'SELECT
 docker-compose exec -T postgres-13 bash -c "psql -U lagoon -d lagoon -c \'\\l+ lagoon\'" | grep "lagoon"
 
 # postgres-13 should be able to read/write data
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres-13" | grep "SERVICE_HOST=PostgreSQL 13"
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres-13" | grep "LAGOON_TEST_VAR=all-images"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres?service=postgres-13" | grep "SERVICE_HOST=PostgreSQL 13"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres?service=postgres-13" | grep "LAGOON_TEST_VAR=all-images"
 
 # postgres-14 should be version 14 client
 docker-compose exec -T postgres-14 bash -c "psql --version" | grep "psql" | grep "14."
@@ -255,11 +257,8 @@ docker-compose exec -T postgres-14 bash -c "psql -U lagoon -d lagoon -c \'SELECT
 docker-compose exec -T postgres-14 bash -c "psql -U lagoon -d lagoon -c \'\\l+ lagoon\'" | grep "lagoon"
 
 # postgres-14 should be able to read/write data
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres-14" | grep "SERVICE_HOST=PostgreSQL 14"
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres-14" | grep "LAGOON_TEST_VAR=all-images"
-
-# postgres-15 should be version 15 client
-docker-compose exec -T postgres-15 bash -c "psql --version" | grep "psql" | grep "15."
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres?service=postgres-14" | grep "SERVICE_HOST=PostgreSQL 14"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres?service=postgres-14" | grep "LAGOON_TEST_VAR=all-images"
 
 # postgres-15 should be version 15 client
 docker-compose exec -T postgres-15 bash -c "psql --version" | grep "psql" | grep "15."
@@ -271,8 +270,21 @@ docker-compose exec -T postgres-15 bash -c "psql -U lagoon -d lagoon -c \'SELECT
 docker-compose exec -T postgres-15 bash -c "psql -U lagoon -d lagoon -c \'\\l+ lagoon\'" | grep "lagoon"
 
 # postgres-15 should be able to read/write data
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres-15" | grep "SERVICE_HOST=PostgreSQL 15"
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres-15" | grep "LAGOON_TEST_VAR=all-images"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres?service=postgres-15" | grep "SERVICE_HOST=PostgreSQL 15"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres?service=postgres-15" | grep "LAGOON_TEST_VAR=all-images"
+
+# postgres-16 should be version 16 client
+docker-compose exec -T postgres-16 bash -c "psql --version" | grep "psql" | grep "16."
+
+# postgres-16 should be version 16 server
+docker-compose exec -T postgres-16 bash -c "psql -U lagoon -d lagoon -c \'SELECT version();\'" | grep "PostgreSQL" | grep "16."
+
+# postgres-16 should have lagoon database
+docker-compose exec -T postgres-16 bash -c "psql -U lagoon -d lagoon -c \'\\l+ lagoon\'" | grep "lagoon"
+
+# postgres-16 should be able to read/write data
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres?service=postgres-16" | grep "SERVICE_HOST=PostgreSQL 16"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/postgres?service=postgres-16" | grep "LAGOON_TEST_VAR=all-images"
 
 # nginx should be served by openresty
 docker-compose exec -T commons sh -c "curl -kL http://nginx:8080" | grep "hr" | grep "openresty"
@@ -303,8 +315,8 @@ docker-compose exec -T commons sh -c "curl opensearch-2:9200" | grep number | gr
 docker-compose exec -T commons sh -c "curl opensearch-2:9200/_cluster/health" | json_pp | grep status | grep -v red
 
 # opensearch-2 should be able to read/write data
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/opensearch-2" | grep "SERVICE_HOST=opensearch-2"
-docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/opensearch-2" | grep "LAGOON_TEST_VAR=all"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/opensearch?service=opensearch-2" | grep "SERVICE_HOST=opensearch-2"
+docker-compose exec -T commons sh -c "curl -kL http://internal-services-test:3000/opensearch?service=opensearch-2" | grep "LAGOON_TEST_VAR=all"
 ```
 
 Destroy tests

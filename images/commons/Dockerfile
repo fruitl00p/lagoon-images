@@ -1,7 +1,7 @@
-FROM webdevops/go-crond:23.2.0-alpine AS go-crond
-FROM amazeeio/envplate:v1.0.0-rc.3 AS envplate
+FROM webdevops/go-crond:23.10.0-beta-alpine AS go-crond
+FROM amazeeio/envplate:v1.0.3 AS envplate
 
-FROM alpine:3.18.4
+FROM alpine:3.19.1
 
 LABEL org.opencontainers.image.authors="The Lagoon Authors" maintainer="The Lagoon Authors"
 LABEL org.opencontainers.image.source="https://github.com/uselagoon/lagoon-images" repository="https://github.com/uselagoon/lagoon-images"
@@ -18,8 +18,10 @@ COPY --from=envplate /usr/local/bin/ep /bin/ep
 
 RUN apk update \
     && apk add --no-cache \
-           curl \
-           tini \
+        curl \
+        rsync \
+        tar \
+        tini \
     && rm -rf /var/cache/apk/* \
     && mkdir -p /lagoon/crontabs && fix-permissions /lagoon/crontabs \
     && ln -s /home/.bashrc /home/.profile
